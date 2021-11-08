@@ -3,8 +3,9 @@ Big Data Analytics Projekt
 
 
 
-#Quick start
-###Prerequisites:
+# Quick start
+
+### Prerequisites:
 - Git
 - Docker  
 
@@ -28,17 +29,17 @@ docker exec -it broker bash
 
 
 
-###Creating  
+### Creating  
 ```shell script
 kafka-topics --create --topic example_topic --zookeeper zookeeper:2181 --partitions 1 --replication-factor 1
 ```
 
-###Consumer
+### Consumer
 ```shell script
 kafka-console-consumer --topic example_topic --bootstrap-server broker:29092 --from-beginning
 ```
 
-###Producer
+### Producer
 ```shell script
 kafka-console-producer --broker-list broker:29092 --topic example_topic
 ```

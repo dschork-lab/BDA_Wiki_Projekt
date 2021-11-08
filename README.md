@@ -46,5 +46,6 @@ kafka-console-producer --broker-list broker:29092 --topic example_topic
 ---
 
 
-Alternatively creating the topics can be done via the UI component
+Alternatively creating the topics can be done via the UI-Component
+
 Access ``localhost:9000`` and click `+ new` 

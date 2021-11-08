@@ -1,0 +1,32 @@
+Analysen:
+	- Gefühlsbasierte Analyse/Kategorisierung von Wikipedia Artikeln
+	- Artikel nach Themen (Tags)
+	- Bei Änderungen am Artikel neue Analyse und mit älteren Ständen Vergleichen (Mood-Entwicklung)
+
+Händisch: 
+	- In Verbindung mit Politik setzen (Arbeit, Präsentation)
+		○ Wahlergebnisse
+		○ Umfragen (von Tagesschau?)
+
+Herausforderungen:
+	- Sprache der Artikel
+	- Woher kommen die Mood-Wörter
+	- Auswahl der Artikel
+
+Arbeit:
+	- Kafka-Producer
+	- Wikipedia-Consumer
+	- Kafka-Consumer
+
+Welche Daten brauchen wir von der API:
+	- Titel des Artikels
+	- Inhalt (Text) des Artikels
+	- Tags/Kategorien der Artikel
+	- Bearbeitungen von Artikeln
+		○ Datum
+		○ Die Änderung am Text/Den alten Text
+
+Vorauswahl:
+	- Tags
+		○ Politik?
+		○ Politiker?

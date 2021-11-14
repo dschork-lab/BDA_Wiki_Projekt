@@ -51,12 +51,24 @@ Alternatively creating the topics can be done via the UI-Component
 Access ``localhost:9000`` and click `+ new` 
 
 ---
-Vor Nutzung der Wikipedia Producer Python Datei zu beachten: 
+##Vor Nutzung der Wikipedia Producer Python Datei zu beachten: 
 
-Zuvor zu installierende Python Packages:
-kafka-python
-requests
+###Zuvor zu installierende Python Dateien:
+```shell script
+pip install kafka-python
+pip install pymongo
+pip install requests
+```
+---
 
-Kafka Befehle mit korrektem topic Namen:
+##Wikipedia Guide
+### Wikipedia Topic anlegen
+```shell script
 kafka-topics --create --topic article_information --zookeeper zookeeper:2181 --partitions 1 --replication-factor 1
+```
 
+### Consumer & Producer
+Python-Dateien ``KafkaMongoDBConnector.py`` und ``WikipediaKafakaConnector.py`` ausführen
+
+### MongoDB Web Interface
+Access via ``localhost:8081``

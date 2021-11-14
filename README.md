@@ -49,3 +49,14 @@ kafka-console-producer --broker-list broker:29092 --topic example_topic
 Alternatively creating the topics can be done via the UI-Component
 
 Access ``localhost:9000`` and click `+ new` 
+
+---
+Vor Nutzung der Wikipedia Producer Python Datei zu beachten: 
+
+Zuvor zu installierende Python Packages:
+kafka-python
+requests
+
+Kafka Befehle mit korrektem topic Namen:
+kafka-topics --create --topic article_information --zookeeper zookeeper:2181 --partitions 1 --replication-factor 1
+

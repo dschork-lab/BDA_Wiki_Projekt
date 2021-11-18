@@ -51,9 +51,9 @@ Alternatively creating the topics can be done via the UI-Component
 Access ``localhost:9000`` and click `+ new` 
 
 ---
-##Vor Nutzung der Wikipedia Producer Python Datei zu beachten: 
+## Vor Nutzung der Wikipedia Producer Python Datei zu beachten: 
 
-###Zuvor zu installierende Python Dateien:
+### Zuvor zu installierende Python Dateien:
 ```shell script
 pip install kafka-python
 pip install pymongo
@@ -62,7 +62,7 @@ pip install wikitextparser
 ```
 ---
 
-##Wikipedia Guide
+## Wikipedia Guide
 ### Wikipedia Topic anlegen - Not Needed  
 ```shell script
 kafka-topics --create --topic article_information --zookeeper zookeeper:2181 --partitions 1 --replication-factor 1
@@ -76,11 +76,11 @@ Access via ``localhost:8081``
 
 ---
 
-##Structure database
+## Structure database
 Database: article_information  
 Collections: changes, id_mood
 
-###changes
+### changes
 Contains the raw changes data from the wikipedia api
 ```
 {
@@ -123,7 +123,7 @@ Contains the raw changes data from the wikipedia api
 }
 ```
 
-###id_mood
+### id_mood
 Contains simplified data with mood analysis
 ```
 {

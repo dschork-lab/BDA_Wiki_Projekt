@@ -1,9 +1,12 @@
 import json
+import re
 from kafka import KafkaConsumer
 from kafka.errors import NoBrokersAvailable
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
+from MoodAnalysis import check_mood
 
+CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
 
 # Create Kafka consumer
 def create_consumer_instance(bootstrap_server: str, kafka_topic: str) -> KafkaConsumer:
@@ -50,14 +53,44 @@ if __name__ == "__main__":
     # for every message from consumer put data into database
     for msg in consumer:
         msg_json = json.loads(msg.value)
+
+        # Remove HTML-Tags
+        msg_json['old_version']['content'] = re.sub(CLEANR, '', msg_json['old_version']['content'])
+        msg_json['new_version']['content'] = re.sub(CLEANR, '', msg_json['new_version']['content'])
+
+        # Save full change entry in Database
         changes_collection.insert_one(msg_json)
 
-        # ToDo: Implement mood analysis
+        # Mood analysis for the content of the old and new version
+        oldVersionMood = check_mood(msg_json['old_version']['content'])
+        newVersionMood = check_mood(msg_json['new_version']['content'])
         msg_mood = {
             'id': msg_json['id'],
             'old_revision': msg_json['revision']['old'],
             'new_revision': msg_json['revision']['new'],
-            'old_mood': '1',
-            'new_mood': '2'
+            'old_positive': oldVersionMood[0],
+            'old_negative': oldVersionMood[1],
+            'old_anger': oldVersionMood[2],
+            'old_anticipation': oldVersionMood[3],
+            'old_disgust': oldVersionMood[4],
+            'old_fear': oldVersionMood[5],
+            'old_joy': oldVersionMood[6],
+            'old_sadness': oldVersionMood[7],
+            'old_surprise': oldVersionMood[8],
+            'old_trust': oldVersionMood[9],
+            'new_positive': newVersionMood[0],
+            'new_negative': newVersionMood[1],
+            'new_anger': newVersionMood[2],
+            'new_anticipation': newVersionMood[3],
+            'new_disgust': newVersionMood[4],
+            'new_fear': newVersionMood[5],
+            'new_joy': newVersionMood[6],
+            'new_sadness': newVersionMood[7],
+            'new_surprise': newVersionMood[8],
+            'new_trust': newVersionMood[9],
+            'old_content_length': len(msg_json['old_version']['content'].split()),
+            'new_content_length': len(msg_json['new_version']['content'].split())
         }
+
+        # Save aggregated mood analysis in database
         id_mood_collection.insert_one(msg_mood)

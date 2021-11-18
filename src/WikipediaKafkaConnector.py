@@ -1,6 +1,8 @@
 import json
 import requests
+import re
 
+import wikitextparser
 from kafka import KafkaProducer
 from kafka.errors import NoBrokersAvailable
 from sseclient import SSEClient
@@ -13,20 +15,40 @@ def create_producer_instance(bootstrap_server: str) -> KafkaProducer:
         producer = KafkaProducer(bootstrap_servers=bootstrap_server,
                                  value_serializer=lambda x: json.dumps(x).encode("utf-8"))
     except NoBrokersAvailable:
-        print(f"No broker found at {bootstrap_server}")
+        print(f"FATAL | {datetime.now()} | No broker found at {bootstrap_server}")
         raise
 
     if producer.bootstrap_connected():
-        print("connected")
+        print(f"INFO | {datetime.now()} | To kafka broker connected")
         return producer
     else:
-        print("failed to establish connection")
+        print("FATAL | {datetime.now()} | Failed to establish connection")
         exit(1)
+
+
+def parse_mediawiki_to_plain(mediawiki: str) -> str:
+    wiki_text_parsed = wikitextparser.parse(mediawiki).plain_text()
+
+    index = wiki_text_parsed.find("==See also==")
+    output = re.sub('={2,4}|\*', "", wiki_text_parsed[:index])
+    return output
+
+
+def check_for_page_id(old, new):
+    if "pages" not in old["query"].keys() or "pages" not in new["query"].keys():
+        print(f"WARN | {datetime.now()} | Wikipedia API Response incomplete. Pages parameter missing")
+        return
+    old_page_id = list(old["query"]["pages"].keys())[0]
+    new_page_id = list(new["query"]["pages"].keys())[0]
+    if old_page_id != new_page_id:
+        print(f"WARN | {datetime.now()} | Page ID changed between version")
+        return
+    return old_page_id
 
 
 def check_for_category_response(response, page_id):
     if "categories" not in response["query"]["pages"][f"{page_id}"].keys():
-        print(f"{datetime.now()} | response without categories parameter")
+        print(f"WARN | {datetime.now()} | Response without categories parameter")
         response["query"]["pages"][f"{page_id}"]["categories"] = []
     return response
 
@@ -39,30 +61,33 @@ def merge_event(change_event, old, new) -> Dict[str, str]:
     :return: formatted data to send to kafka topic
     """
     try:
-        page_id = list(old["query"]["pages"].keys())[0]
-        old = check_for_category_response(old, page_id)
-        new = check_for_category_response(new, page_id)
+        page_id = check_for_page_id(old, new)
+        if page_id:
+            old = check_for_category_response(old, page_id)
+            new = check_for_category_response(new, page_id)
 
-        event = {
-            "id": change_event['id'],
-            "domain": change_event['meta']['domain'],
-            "timestamp": change_event['meta']['dt'],
-            "revision": {
-                "old": change_event['revision']['old'],
-                "new": change_event['revision']['new']
-            },
-            "old_version": {
-                "title": old["query"]["pages"][f"{page_id}"]["title"],
-                "content": old["query"]["pages"][f"{page_id}"]["extract"],
-                "categories": [x["title"][9:] for x in old["query"]["pages"][f"{page_id}"]["categories"]]
-            },
-            "new_version": {
-                "title": new["query"]["pages"][f"{page_id}"]["title"],
-                "content": new["query"]["pages"][f"{page_id}"]["extract"],
-                "categories": [x["title"][9:] for x in new["query"]["pages"][f"{page_id}"]["categories"]]
+            event = {
+                "id": change_event['id'],
+                "domain": change_event['meta']['domain'],
+                "timestamp": change_event['meta']['dt'],
+                "revision": {
+                    "old": change_event['revision']['old'],
+                    "new": change_event['revision']['new']
+                },
+                "old_version": {
+                    "title": old["query"]["pages"][f"{page_id}"]["title"],
+                    "content": parse_mediawiki_to_plain(
+                        old["query"]["pages"][f"{page_id}"]["revisions"][0]["slots"]["main"]["*"]),
+                    "categories": [x["title"][9:] for x in old["query"]["pages"][f"{page_id}"]["categories"]]
+                },
+                "new_version": {
+                    "title": new["query"]["pages"][f"{page_id}"]["title"],
+                    "content": parse_mediawiki_to_plain(
+                        new["query"]["pages"][f"{page_id}"]["revisions"][0]["slots"]["main"]["*"]),
+                    "categories": [x["title"][9:] for x in new["query"]["pages"][f"{page_id}"]["categories"]]
+                }
             }
-        }
-        return event
+            return event
     except KeyError as e:
         print(e)
         pass
@@ -72,7 +97,7 @@ if __name__ == "__main__":
     producer = create_producer_instance("localhost:9092")
 
     event_change_url = 'https://stream.wikimedia.org/v2/stream/recentchange'
-    article_information_url = "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=extracts%7Ccategories&meta=&revids={}"
+    article_information_url = "https://en.wikipedia.org/w/api.php?action=query&format=json&prop=categories%7Crevisions&revids={}&rvprop=content&rvslots=*"
 
     # Socket for live time changes. Push Query
     for event in SSEClient(event_change_url):
@@ -93,3 +118,4 @@ if __name__ == "__main__":
                         new_version_json = new_version.json()
                         reduced_event = merge_event(event_data, old_version_json, new_version_json)
                         producer.send("article_information", value=reduced_event)
+                        print(f"INFO | {datetime.now()} | Send new change event to Kafka Broker")

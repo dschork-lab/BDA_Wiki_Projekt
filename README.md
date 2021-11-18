@@ -58,11 +58,12 @@ Access ``localhost:9000`` and click `+ new`
 pip install kafka-python
 pip install pymongo
 pip install requests
+pip install wikitextparser
 ```
 ---
 
 ##Wikipedia Guide
-### Wikipedia Topic anlegen
+### Wikipedia Topic anlegen - Not Needed  
 ```shell script
 kafka-topics --create --topic article_information --zookeeper zookeeper:2181 --partitions 1 --replication-factor 1
 ```

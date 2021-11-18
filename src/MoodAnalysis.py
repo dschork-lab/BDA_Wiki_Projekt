@@ -1,5 +1,5 @@
 import csv
-from typing import Union, Any
+from typing import List
 
 reducedCsv = []
 
@@ -8,7 +8,7 @@ reducedCsv = []
 with open('./../NRC-Emotion-Lexicon-English-only.csv') as moodAnalysisCsv:
     csvReader = csv.reader(moodAnalysisCsv, delimiter=';')
     for row in csvReader:
-        if row[1] == '1' or row[2] == '1' or row[3] == '1' or row[4] == '1' or row[5] == '1' or row[6] == '1' or row[7] == '1' or row[8] == '1' or row[9] == '1' or row[10] == '1':
+        if True in [row[x] == '1' for x in range(1, 11)]:
             reducedCsv.append(row)
 
 
@@ -24,8 +24,8 @@ with open('./../NRC-Emotion-Lexicon-English-only.csv') as moodAnalysisCsv:
 # 7: Sadness
 # 8: Surprise
 # 9: Trust
-def check_mood(article: str) -> list[Union[int, Any]]:
-    article_result = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+def check_mood(article: str) -> List[int]:
+    article_result = [0 for _ in range(10)]
     article_list = article.split()
     for word in article_list:
         word_result = check_mood_for_word(word)
@@ -35,10 +35,8 @@ def check_mood(article: str) -> list[Union[int, Any]]:
 
 
 # Mood analysis for a single word (Tuple description see check_mood())
-def check_mood_for_word(word: str) -> tuple[int, int, int, int, int, int, int, int, int, int]:
+def check_mood_for_word(word: str) -> List[int]:
     for row in reducedCsv:
         if row[0].lower() == word.lower():
-            return (
-                int(row[1]), int(row[2]), int(row[3]), int(row[4]), int(row[5]), int(row[6]), int(row[7]), int(row[8]),
-                int(row[9]), int(row[10]))
-    return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            return [int(row[x]) for x in range(1, 11)]
+    return [0 for _ in range(10)]

@@ -19,7 +19,7 @@ def create_producer_instance(bootstrap_server: str) -> KafkaProducer:
         raise
 
     if producer.bootstrap_connected():
-        print(f"INFO | {datetime.now()} | To kafka broker connected")
+        print(f"INFO | {datetime.now()} | Connected to kafka broker")
         return producer
     else:
         print("FATAL | {datetime.now()} | Failed to establish connection")
@@ -60,12 +60,11 @@ def merge_event(change_event, old, new) -> Dict[str, str]:
     :param new: Data of the new article version
     :return: formatted data to send to kafka topic
     """
-    try:
-        page_id = check_for_page_id(old, new)
-        if page_id:
-            old = check_for_category_response(old, page_id)
-            new = check_for_category_response(new, page_id)
-
+    page_id = check_for_page_id(old, new)
+    if page_id:
+        old = check_for_category_response(old, page_id)
+        new = check_for_category_response(new, page_id)
+        try:
             event = {
                 "id": change_event['id'],
                 "domain": change_event['meta']['domain'],
@@ -88,9 +87,10 @@ def merge_event(change_event, old, new) -> Dict[str, str]:
                 }
             }
             return event
-    except KeyError as e:
-        print(e)
-        pass
+        except KeyError as e:
+            print(page_id)
+            print(e)
+            pass
 
 
 if __name__ == "__main__":
@@ -117,5 +117,6 @@ if __name__ == "__main__":
                         old_version_json = old_version.json()
                         new_version_json = new_version.json()
                         reduced_event = merge_event(event_data, old_version_json, new_version_json)
-                        producer.send("article_information", value=reduced_event)
-                        print(f"INFO | {datetime.now()} | Send new change event to Kafka Broker")
+                        if reduced_event:
+                            producer.send("article_information", value=reduced_event)
+                            print(f"INFO | {datetime.now()} | Send new change event to Kafka Broker")

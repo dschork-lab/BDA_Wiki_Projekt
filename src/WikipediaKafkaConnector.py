@@ -22,7 +22,7 @@ def create_producer_instance(bootstrap_server: str) -> KafkaProducer:
         print(f"INFO | {datetime.now()} | To kafka broker connected")
         return producer
     else:
-        print("FATAL | {datetime.now()} | Failed to establish connection")
+        print(f"FATAL | {datetime.now()} | Failed to establish connection")
         exit(1)
 
 

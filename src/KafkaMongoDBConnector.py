@@ -4,9 +4,11 @@ from kafka import KafkaConsumer
 from kafka.errors import NoBrokersAvailable
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
+from datetime import datetime
 from MoodAnalysis import check_mood
 
 CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
+
 
 # Create Kafka consumer
 def create_consumer_instance(bootstrap_server: str, kafka_topic: str) -> KafkaConsumer:
@@ -14,14 +16,15 @@ def create_consumer_instance(bootstrap_server: str, kafka_topic: str) -> KafkaCo
         consumer = KafkaConsumer(kafka_topic, bootstrap_servers=bootstrap_server)
 
     except NoBrokersAvailable:
-        print(f"No broker found at {bootstrap_server}")
+        print(f"FATAL | {datetime.now()} | No broker found at {bootstrap_server}")
         raise
 
     if consumer.bootstrap_connected():
-        print("connected")
+        print(f"INFO | {datetime.now()} | To kafka broker connected")
         return consumer
+
     else:
-        print("failed to establish connection")
+        print(f"FATAL | {datetime.now()} | Failed to establish connection to broker")
         exit(1)
 
 
@@ -30,9 +33,12 @@ def create_database_client(mongo_username: str, mongo_password: str, mongo_port:
     try:
         client = MongoClient(f'mongodb://{mongo_username}:{mongo_password}@localhost:{mongo_port}/')
         client.server_info()
+        print(f"INFO | {datetime.now()} | To database connected")
         return client
-    except ServerSelectionTimeoutError as err:
-        print(err)
+    except ServerSelectionTimeoutError as error_message:
+        print("FATAL | {datetime.now()} | Failed to establish connection to database")
+        print(error_message)
+        exit(1)
 
 
 if __name__ == "__main__":
@@ -60,6 +66,7 @@ if __name__ == "__main__":
 
         # Save full change entry in Database
         changes_collection.insert_one(msg_json)
+        print(f"INFO | {datetime.now()} | Send new change event to database")
 
         # Mood analysis for the content of the old and new version
         oldVersionMood = check_mood(msg_json['old_version']['content'])
@@ -94,3 +101,4 @@ if __name__ == "__main__":
 
         # Save aggregated mood analysis in database
         id_mood_collection.insert_one(msg_mood)
+        print(f"INFO | {datetime.now()} | Send new analysed change event to database")

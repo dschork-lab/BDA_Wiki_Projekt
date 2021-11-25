@@ -1,7 +1,8 @@
 import csv
-from typing import List
+import numpy as np
 
 reducedCsv = []
+wordOnlyCsv = []
 
 # Single execution on import
 # Reads the english only csv mood lexicon file and remove entries without any value
@@ -10,10 +11,11 @@ with open('./../NRC-Emotion-Lexicon-English-only.csv') as moodAnalysisCsv:
     for row in csvReader:
         if True in [row[x] == '1' for x in range(1, 11)]:
             reducedCsv.append(row)
+            wordOnlyCsv.append(row[0])
 
 
 # Takes an full wikipedia article and calculate the mood values
-# Meaning of the values in the tuple
+# Meaning of the values in the Numpy Array
 # 0: Positive
 # 1: Negative
 # 2: Anger
@@ -24,19 +26,14 @@ with open('./../NRC-Emotion-Lexicon-English-only.csv') as moodAnalysisCsv:
 # 7: Sadness
 # 8: Surprise
 # 9: Trust
-def check_mood(article: str) -> List[int]:
-    article_result = [0 for _ in range(10)]
-    article_list = article.split()
-    for word in article_list:
-        word_result = check_mood_for_word(word)
-        for i, result in enumerate(word_result):
-            article_result[i] = article_result[i] + result
+def check_mood(article: str) -> np.ndarray:
+    article_list = np.array(article.split())
+    article_counter = dict(zip(*np.unique(article_list, return_counts=True)))
+    article_result = np.zeros(10)
+
+    for index, term in enumerate(wordOnlyCsv):
+        if term in article_list:
+            for i in range(10):
+                article_result[i] += int(reducedCsv[index][i + 1]) * article_counter[term]
+
     return article_result
-
-
-# Mood analysis for a single word (Tuple description see check_mood())
-def check_mood_for_word(word: str) -> List[int]:
-    for row in reducedCsv:
-        if row[0].lower() == word.lower():
-            return [int(row[x]) for x in range(1, 11)]
-    return [0 for _ in range(10)]

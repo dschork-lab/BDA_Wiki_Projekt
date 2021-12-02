@@ -1,8 +1,16 @@
 import csv
+import re
+import nltk
 import numpy as np
+from nltk.stem import WordNetLemmatizer
+
 
 reducedCsv = []
 wordOnlyCsv = []
+
+CLEAN_RE = re.compile('[^\w\s]')
+
+nltk.data.path.append('./../nltk_data')
 
 # Single execution on import
 # Reads the english only csv mood lexicon file and remove entries without any value
@@ -27,7 +35,12 @@ with open('./../NRC-Emotion-Lexicon-English-only.csv') as moodAnalysisCsv:
 # 8: Surprise
 # 9: Trust
 def check_mood(article: str) -> np.ndarray:
+    lemmatizer = WordNetLemmatizer()
+    article = re.sub(CLEAN_RE, '', article)
+    article = article.lower()
     article_list = np.array(article.split())
+    article_list = [lemmatizer.lemmatize(word) for word in article_list]
+
     article_counter = dict(zip(*np.unique(article_list, return_counts=True)))
     article_result = np.zeros(10)
 

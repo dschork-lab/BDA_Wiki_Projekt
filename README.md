@@ -64,6 +64,7 @@ pip install pymongo
 pip install requests
 pip install wikitextparser
 pip install numpy
+pip install nltk
 ```
 ---
 

@@ -51,6 +51,10 @@ Alternatively creating the topics can be done via the UI-Component
 Access ``localhost:9000`` and click `+ new` 
 
 ---
+## PyCharm Configuration
+In the "Select Run/Debug Configuration" select "Edit Configurations.." and mark the "Allow parallel run" checkbox to simultaneously run multiple kafka consumers.
+
+---
 ## Vor Nutzung der Wikipedia Producer Python Datei zu beachten: 
 
 ### Zuvor zu installierende Python Dateien:
@@ -64,9 +68,13 @@ pip install numpy
 ---
 
 ## Wikipedia Guide
-### Wikipedia Topic anlegen - Not Needed  
+### Wikipedia Topic anlegen
 ```shell script
-kafka-topics --create --topic article_information --zookeeper zookeeper:2181 --partitions 1 --replication-factor 1
+kafka-topics --create --topic article_information --zookeeper zookeeper:2181 --partitions 4 --replication-factor 1
+```
+If the topic already exists it can be deleted with:
+```shell
+kafka-topics --delete --topic article_information --zookeeper zookeeper:2181
 ```
 
 ### Consumer & Producer

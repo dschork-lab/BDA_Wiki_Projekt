@@ -11,9 +11,9 @@ CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
 
 
 # Create Kafka consumer
-def create_consumer_instance(bootstrap_server: str, kafka_topic: str) -> KafkaConsumer:
+def create_consumer_instance(bootstrap_server: str, kafka_topic: str, group_id: str) -> KafkaConsumer:
     try:
-        consumer = KafkaConsumer(kafka_topic, bootstrap_servers=bootstrap_server)
+        consumer = KafkaConsumer(kafka_topic, group_id=group_id, bootstrap_servers=bootstrap_server)
 
     except NoBrokersAvailable:
         print(f"FATAL | {datetime.now()} | No broker found at {bootstrap_server}")
@@ -44,7 +44,8 @@ def create_database_client(mongo_username: str, mongo_password: str, mongo_port:
 if __name__ == "__main__":
     bootstrap_server = 'localhost:9092'
     kafka_topic = 'article_information'
-    consumer = create_consumer_instance(bootstrap_server, kafka_topic)
+    kafka_consumer_group = "mood-analysis-group-1"
+    consumer = create_consumer_instance(bootstrap_server, kafka_topic, kafka_consumer_group)
 
     mongo_username = 'root'
     mongo_password = 'example'

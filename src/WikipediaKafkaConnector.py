@@ -70,10 +70,8 @@ def merge_event(change_event, old, new) -> Dict[str, str]:
                 "id": change_event['id'],
                 "domain": change_event['meta']['domain'],
                 "timestamp": change_event['meta']['dt'],
-                "revision": {
-                    "old": change_event['revision']['old'],
-                    "new": change_event['revision']['new']
-                },
+                "old_revision": change_event['revision']['old'],
+                "new_revision": change_event['revision']['new'],
                 "old_version": {
                     "title": old["query"]["pages"][f"{page_id}"]["title"],
                     "content": parse_mediawiki_to_plain(

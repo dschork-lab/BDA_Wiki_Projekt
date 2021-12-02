@@ -66,8 +66,8 @@ if __name__ == "__main__":
         newVersionMood = check_mood(msg_json['new_version']['content'])
         msg_mood = {
             'id': msg_json['id'],
-            'old_revision': msg_json['revision']['old'],
-            'new_revision': msg_json['revision']['new'],
+            'old_revision': msg_json['old_revision'],
+            'new_revision': msg_json['new_revision'],
             'old_positive': oldVersionMood[0],
             'old_negative': oldVersionMood[1],
             'old_anger': oldVersionMood[2],

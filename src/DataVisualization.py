@@ -4,22 +4,10 @@ import pymongo
 import pandas as pd
 
 
-def get_mood_data():
-    # connect to MongoDB
-    client = pymongo.MongoClient('mongodb://root:example@localhost:27017/')
-    # get database 'article_information'
-    article_information_db = client['article_information']
-    # get mood collection
-    mood_collection = article_information_db['id_mood']
-    return pd.DataFrame(list(mood_collection.find()))
-
-
 def round_float_list(values, digits):
     rounded = []
-
     for item in values:
         rounded.append(round(item, digits))
-
     return rounded
 
 
@@ -62,5 +50,19 @@ def plot_average_data(data):
 
 
 if __name__ == "__main__":
-    mood_data = get_mood_data()
+    # connect to MongoDB
+    client = pymongo.MongoClient('mongodb://root:example@localhost:27017/')
+    # get database 'article_information'
+    article_information_db = client['article_information']
+    # get mood collection
+    mood_collection = article_information_db['id_mood']
+    # get changes collection
+    changes_collection = article_information_db['changes']
+    # create DataFrames
+    mood_data = pd.DataFrame(list(mood_collection.find()))
+    changes_data = pd.DataFrame(list(changes_collection.find()))
+
+    data_joined = pd.concat([mood_data.set_index('new_revision'), changes_data.set_index('new_revision')],
+                     axis=1, join='inner').reset_index()
+
     plot_average_data(mood_data)

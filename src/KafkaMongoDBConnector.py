@@ -1,13 +1,10 @@
 import json
-import re
 from kafka import KafkaConsumer
 from kafka.errors import NoBrokersAvailable
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 from datetime import datetime
 from MoodAnalysis import check_mood
-
-CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
 
 
 # Create Kafka consumer
@@ -60,10 +57,6 @@ if __name__ == "__main__":
     # for every message from consumer put data into database
     for msg in consumer:
         msg_json = json.loads(msg.value)
-
-        # Remove HTML-Tags
-        msg_json['old_version']['content'] = re.sub(CLEANR, '', msg_json['old_version']['content'])
-        msg_json['new_version']['content'] = re.sub(CLEANR, '', msg_json['new_version']['content'])
 
         # Save full change entry in Database
         changes_collection.insert_one(msg_json)

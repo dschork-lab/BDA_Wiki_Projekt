@@ -49,6 +49,40 @@ def plot_average_data(data):
     plt.show()
 
 
+def plot_date_data(data):
+    # transform ISO-8601 timestamp to date
+    data['timestamp'] = pd.to_datetime(data['timestamp']).dt.date
+    # group data by date (timestamp) and build mean over values
+    grouped_data = data.groupby(['timestamp'], as_index=False).mean()
+
+    # get dates
+    x = grouped_data['timestamp'].to_list()
+    # collect data for each mood
+    mood_data_grouped = {
+        'positive': grouped_data['new_positive'].to_list(),
+        'negative': grouped_data['new_negative'].to_list(),
+        'anger': grouped_data['new_anger'].to_list(),
+        'anticipation': grouped_data['new_anticipation'].to_list(),
+        'disgust': grouped_data['new_disgust'].to_list(),
+        'fear': grouped_data['new_fear'].to_list(),
+        'joy': grouped_data['new_joy'].to_list(),
+        'sadness': grouped_data['new_sadness'].to_list(),
+        'surprise': grouped_data['new_surprise'].to_list(),
+        'trust': grouped_data['new_trust'].to_list()
+    }
+
+    # create one line for each mood
+    for key in mood_data_grouped.keys():
+        plt.plot(x, mood_data_grouped.get(key), label=key, marker='o')
+    # add some text for labels, title and custom x-axis tick labels, etc.
+    plt.legend()
+    plt.xlabel("Date")
+    plt.ylabel("Scores")
+    plt.title("Mood analysis grouped by date")
+    plt.xticks(x, x)
+    plt.show()
+
+
 if __name__ == "__main__":
     # connect to MongoDB
     client = pymongo.MongoClient('mongodb://root:example@localhost:27017/')
@@ -66,3 +100,4 @@ if __name__ == "__main__":
                      axis=1, join='inner').reset_index()
 
     plot_average_data(mood_data)
+    plot_date_data(data_joined)

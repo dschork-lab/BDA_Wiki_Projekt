@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pymongo
 import pandas as pd
+from datetime import datetime
 
 
 def round_float_list(values, digits):
@@ -46,7 +47,8 @@ def plot_average_data(data):
     fig.set_figwidth(10)
     fig.tight_layout()
 
-    plt.show()
+    plt.savefig(f"../diagrams/edit_diagram_{datetime.now().strftime('%Y-%m-%dT%H_%M_%S')}.png")
+    plt.close()
 
 
 def plot_date_data(data):
@@ -80,7 +82,8 @@ def plot_date_data(data):
     plt.ylabel("Scores")
     plt.title("Mood analysis grouped by date")
     plt.xticks(x, x)
-    plt.show()
+    plt.savefig(f"../diagrams/date_diagram_{datetime.now().strftime('%Y-%m-%dT%H_%M_%S')}.png")
+    plt.close()
 
 
 if __name__ == "__main__":
@@ -94,10 +97,11 @@ if __name__ == "__main__":
     changes_collection = article_information_db['changes']
     # create DataFrames
     mood_data = pd.DataFrame(list(mood_collection.find()))
+    mood_data.set_index('new_revision')
     changes_data = pd.DataFrame(list(changes_collection.find()))
+    changes_data.set_index('new_revision')
 
-    data_joined = pd.concat([mood_data.set_index('new_revision'), changes_data.set_index('new_revision')],
-                     axis=1, join='inner').reset_index()
+    data_joined = pd.concat([mood_data, changes_data], axis=1, join='inner').reset_index()
 
     plot_average_data(mood_data)
     plot_date_data(data_joined)

@@ -81,7 +81,8 @@ def plot_date_data(data):
     plt.xlabel("Date")
     plt.ylabel("Scores")
     plt.title("Mood analysis grouped by date")
-    plt.xticks(x, x)
+    plt.xticks(x, x, rotation='vertical')
+    plt.tight_layout()
     plt.savefig(f"../diagrams/date_diagram_{datetime.now().strftime('%Y-%m-%dT%H_%M_%S')}.png")
     plt.close()
 

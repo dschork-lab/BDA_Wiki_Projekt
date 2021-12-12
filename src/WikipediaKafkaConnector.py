@@ -88,7 +88,6 @@ def merge_event(change_event, old, new) -> Dict[str, str]:
             return event
     except KeyError as e:
         print(e)
-        pass
 
 
 if __name__ == "__main__":
@@ -115,5 +114,6 @@ if __name__ == "__main__":
                         old_version_json = old_version.json()
                         new_version_json = new_version.json()
                         reduced_event = merge_event(event_data, old_version_json, new_version_json)
-                        producer.send("article_information", value=reduced_event)
-                        print(f"INFO | {datetime.now()} | Send new change event to Kafka Broker")
+                        if reduced_event:
+                            producer.send("article_information", value=reduced_event)
+                            print(f"INFO | {datetime.now()} | Send new change event to Kafka Broker")
